@@ -15,7 +15,19 @@
       {
         "title": "test_app",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "maximizable": true,
+        "minimizable": true,
+        "closable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "center": true,
+        "transparent": false,
+        "visible": true
       }
     ],
     "security": {
