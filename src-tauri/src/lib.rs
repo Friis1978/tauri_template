@@ -95,7 +95,7 @@ fn get_user(state: tauri::State<Mutex<User>>) -> User {
 #[tauri::command]
 fn login(state: tauri::State<Mutex<User>>, user: User) -> User {
     *state.lock().unwrap() = user;
-    println!("{}", state.lock().unwrap().username);
+    println!("Tauri db save locale state {}", state.lock().unwrap().username);
     state.lock().unwrap().clone()
 }
 
