@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tsbuildinfo
+*.local
+LOCAL_NOTES.md
+.env
+
+# Auto-generated files
+src/auto-imports.d.ts
+components.d.ts
+.eslintrc-auto-import.json
+
+# Generated changelog
+CHANGELOG.md
+
+# Firmware files (downloaded during build)
+src/assets/release/
+
+# Rust stuff
+target
+
+.vscode/
