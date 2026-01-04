@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder}};
 use tauri_plugin_dialog::DialogExt;
 use tauri::AppHandle;
 
@@ -16,12 +16,31 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![get_all_users, get_user, login, open_file, save_file])
         .setup(|app| {
             #[cfg(debug_assertions)] // only include this code on debug builds
-    {
-      let window = app.get_webview_window("main").unwrap();
-      window.open_devtools();
-      window.close_devtools();
-    }
-    Ok(())
+            {
+                let window = app.get_webview_window("main").unwrap();
+                window.open_devtools();
+                window.close_devtools();
+            }
+
+            let open_menu = MenuItemBuilder::new("Open file").id("open_file").build(app)?;
+            let save_menu = MenuItemBuilder::new("Save file").id("save_file").build(app)?;
+
+            let file_submenu = SubmenuBuilder::new(app, "File")
+                .items(&[&open_menu, &save_menu])
+                .build()?;
+
+            app.on_menu_event(move |_app, event| {
+                if event.id() == open_menu.id() {
+                    println!("Open menu item clicked");
+                } else if event.id() == save_menu.id() {
+                    println!("Save menu item clicked");
+                }
+            });
+
+            let menu = MenuBuilder::new(app).item(&file_submenu).build()?;
+            app.set_menu(menu)?;
+            
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
