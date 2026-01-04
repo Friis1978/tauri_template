@@ -93,16 +93,20 @@ fn get_user(state: tauri::State<Mutex<User>>) -> User {
 }
 
 #[tauri::command]
-fn login(state: tauri::State<Mutex<User>>, user: User) -> bool {
+fn login(state: tauri::State<Mutex<User>>, user: User) -> User {
     *state.lock().unwrap() = user;
     println!("{}", state.lock().unwrap().username);
-    true 
+    state.lock().unwrap().clone()
 }
 
 #[tauri::command]
 fn save_file(app: AppHandle, content: String){
     std::thread::spawn(move || {
-        let file_path = app.dialog().file().blocking_save_file().unwrap();
+        let file_path = app.dialog()
+            .file()
+            .add_filter("Text Files", &["txt"])
+            .blocking_save_file()
+            .unwrap();
         let file: String = file_path.to_string();
 
         std::fs::write(file.clone(), content.clone()).unwrap();
