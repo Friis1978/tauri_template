@@ -92,6 +92,10 @@ const login = async (username: string, password: string) => {
       const user = await invoke("login", { user: login });
       console.log("Login successful", user);
       loggedInUser.value = user as User;
+
+      // clear input fields
+      loginUsername.value = "";
+      loginPassword.value = "";
     } else {
       console.log("Login failed");
       error.value = "Invalid username or password";
