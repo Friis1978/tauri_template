@@ -4,9 +4,30 @@ use tauri::{Emitter, Manager, menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilde
 use tauri_plugin_dialog::DialogExt;
 use tauri::AppHandle;
 
+use tauri_plugin_sql::{Migration, MigrationKind};
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create users table",
+            sql: r#"
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    password TEXT NOT NULL
+                );
+                "#,
+            kind: MigrationKind::Up,
+        },
+    ];
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:mydatabase.db", migrations)
+                .build()
+        )
         .plugin(tauri_plugin_dialog::init())
         .manage(Mutex::new(User {
             id: 0,
