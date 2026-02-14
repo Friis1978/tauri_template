@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "ios:dev": "printf '6\n' | pnpm tauri ios dev",
     "tauri:dev": "tauri dev",
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",

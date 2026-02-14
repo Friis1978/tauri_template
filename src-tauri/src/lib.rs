@@ -1,8 +1,10 @@
 use std::sync::Mutex;
 
-use tauri::{Emitter, Manager, menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder}};
+use tauri::{Emitter, Manager, AppHandle};
 use tauri_plugin_dialog::DialogExt;
-use tauri::AppHandle;
+
+#[cfg(desktop)]
+use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 
 use tauri_plugin_sql::{Migration, MigrationKind};
 
@@ -34,32 +36,35 @@ pub fn run() {
             username: "".to_string(),
             password: "".to_string(),
         }))
-        .invoke_handler(tauri::generate_handler![get_all_users, get_user, login, open_file, save_file])
-        .setup(|app| {
+        .invoke_handler(tauri::generate_handler![login, create_user, open_file, save_file])
+        .setup(|_app| {
             #[cfg(debug_assertions)] // only include this code on debug builds
             {
-                let window = app.get_webview_window("main").unwrap();
+                let window = _app.get_webview_window("main").unwrap();
                 window.open_devtools();
                 window.close_devtools();
             }
 
-            let open_menu = MenuItemBuilder::new("Open file").id("open_file").build(app)?;
-            let save_menu = MenuItemBuilder::new("Save file").id("save_file").build(app)?;
+            #[cfg(desktop)]
+            {
+                let open_menu = MenuItemBuilder::new("Open file").id("open_file").build(_app)?;
+                let save_menu = MenuItemBuilder::new("Save file").id("save_file").build(_app)?;
 
-            let file_submenu = SubmenuBuilder::new(app, "File")
-                .items(&[&open_menu, &save_menu])
-                .build()?;
+                let file_submenu = SubmenuBuilder::new(_app, "File")
+                    .items(&[&open_menu, &save_menu])
+                    .build()?;
 
-            app.on_menu_event(move |_app, event| {
-                if event.id() == open_menu.id() {
-                    println!("Open menu item clicked");
-                } else if event.id() == save_menu.id() {
-                    println!("Save menu item clicked");
-                }
-            });
+                _app.on_menu_event(move |_app, event| {
+                    if event.id() == open_menu.id() {
+                        println!("Open menu item clicked");
+                    } else if event.id() == save_menu.id() {
+                        println!("Save menu item clicked");
+                    }
+                });
 
-            let menu = MenuBuilder::new(app).item(&file_submenu).build()?;
-            app.set_menu(menu)?;
+                let menu = MenuBuilder::new(_app).item(&file_submenu).build()?;
+                _app.set_menu(menu)?;
+            }
             
             Ok(())
         })
@@ -68,35 +73,17 @@ pub fn run() {
 }
 
 #[tauri::command]
-fn get_all_users() -> Vec<User>{
-
-    let user1 = User {
-        id: 1,
-        username: "Alice".to_string(),
-        password: "password123".to_string(),
-    };
-    let user2 = User {
-        id: 2,
-        username: "Bob".to_string(),
-        password: "securepass".to_string(),
-    };
-    vec![
-        user1,
-        user2,
-    ]
-}
-
-#[tauri::command]
-fn get_user(state: tauri::State<Mutex<User>>) -> User {
-    let user = &*state.lock().unwrap();
-    user.clone()
-}
-
-#[tauri::command]
 fn login(state: tauri::State<Mutex<User>>, user: User) -> User {
     *state.lock().unwrap() = user;
     println!("Tauri db save locale state {}", state.lock().unwrap().username);
     state.lock().unwrap().clone()
+}
+
+#[tauri::command]
+async fn create_user(username: String, _password: String) -> Result<String, String> {
+    // This command should be called from the frontend, which will use Database.execute()
+    // The database operations should be done from the JavaScript side using the plugin
+    Ok(format!("User {} would be created", username))
 }
 
 #[tauri::command]

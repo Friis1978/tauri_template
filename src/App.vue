@@ -32,7 +32,7 @@ const queryAllUsers = async () => {
   const users: User[] =
     (await user_db.value?.select(
       "SELECT id, username, password FROM users",
-      []
+      [],
     )) || [];
   allUsers.value = users;
   console.log("Queried Users:", users);
@@ -43,7 +43,7 @@ const loginUser = async (username: string, password: string) => {
   const users: User[] =
     (await user_db.value?.select(
       "SELECT id, username, password FROM users WHERE username = ? AND password = ?",
-      [username, password]
+      [username, password],
     )) || [];
   return users.length > 0 ? users[0] : null;
 };
@@ -51,7 +51,7 @@ const loginUser = async (username: string, password: string) => {
 const addUser = async (name: string, pw: string) => {
   await user_db.value?.execute(
     "INSERT INTO users (username, password) VALUES (?, ?)",
-    [name, pw]
+    [name, pw],
   );
   await queryAllUsers();
   username.value = "";
@@ -72,18 +72,6 @@ const clearUsers = async () => {
   }
 };
 
-const getAllUsers = async () => {
-  const users = await invoke("get_all_users");
-  console.log(users);
-};
-
-const getUser = async () => {
-  const user = await invoke("get_user");
-  console.log(user);
-  loginUsername.value = (user as User).username;
-  loginPassword.value = (user as User).password;
-};
-
 const login = async (username: string, password: string) => {
   loginUser(username, password).then(async (success) => {
     if (success) {
@@ -93,6 +81,9 @@ const login = async (username: string, password: string) => {
       console.log("Login successful", user);
       loggedInUser.value = user as User;
 
+      // Save to localStorage
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
+
       // clear input fields
       loginUsername.value = "";
       loginPassword.value = "";
@@ -101,6 +92,11 @@ const login = async (username: string, password: string) => {
       error.value = "Invalid username or password";
     }
   });
+};
+
+const logout = () => {
+  loggedInUser.value = null;
+  localStorage.removeItem("loggedInUser");
 };
 
 const openFile = async () => {
@@ -117,6 +113,18 @@ const saveFile = async () => {
 };
 
 onMounted(() => {
+  // Load saved user from localStorage
+  const savedUser = localStorage.getItem("loggedInUser");
+  if (savedUser) {
+    try {
+      loggedInUser.value = JSON.parse(savedUser) as User;
+      console.log("Restored logged in user:", loggedInUser.value);
+    } catch (error) {
+      console.error("Error parsing saved user:", error);
+      localStorage.removeItem("loggedInUser");
+    }
+  }
+
   listen("save_state", (event) => {
     console.log("Save State Event Received:", event.payload);
   });
@@ -135,17 +143,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-screen w-screen flex flex-col items-start justify-center p-5">
+  <div
+    class="h-screen w-screen flex flex-col items-start justify-start overflow-y-auto p-5"
+  >
     <p class="mt-4 text-gray-600">demonstrating tauri functions</p>
     <div>
       <p v-if="loggedInUser" class="text-green-600">
         Logged in as: {{ loggedInUser.username }}
+        <button
+          @click="logout()"
+          class="ml-4 px-2 py-1 bg-red-500 text-white rounded text-sm"
+        >
+          Logout
+        </button>
       </p>
       <p v-else class="text-red-600">Not logged in</p>
-    </div>
-    <div class="flex p-4 gap-4">
-      <button @click="getAllUsers()">Get locale users</button>
-      <button @click="getUser()">Get User</button>
     </div>
     <div class="flex gap-4">
       <input
