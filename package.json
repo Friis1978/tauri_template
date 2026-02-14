@@ -4,11 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "ios:dev": "printf '6\n' | pnpm tauri ios dev",
-    "tauri:dev": "tauri dev",
-    "dev": "vite",
+    "kill-port": "lsof -ti:1420 | xargs kill -9 2>/dev/null || true",
+    "ios:dev": "pnpm kill-port && printf '6\n' | pnpm tauri ios dev",
+    "ios:dev:ipad": "pnpm kill-port && printf '0\n' | pnpm tauri ios dev",
+    "tauri:dev": "pnpm kill-port && tauri dev",
+    "dev": "pnpm kill-port && vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "preview": "pnpm kill-port && vite preview",
     "tauri": "tauri"
   },
   "dependencies": {

@@ -123,26 +123,6 @@ const refreshDeviceFiles = async () => {
   }
 };
 
-const saveDeviceFile = async () => {
-  const data =
-    (document.querySelector("#contents") as HTMLTextAreaElement)?.value || "";
-  if (!deviceFileName.value.trim()) {
-    fileError.value = "Please enter a file name";
-    return;
-  }
-  try {
-    fileError.value = "";
-    await invoke("save_device_file", {
-      filename: deviceFileName.value,
-      content: data,
-    });
-    await refreshDeviceFiles();
-  } catch (err) {
-    console.error("Failed to save device file:", err);
-    fileError.value = "Failed to save file";
-  }
-};
-
 const confirmSaveDeviceFile = async () => {
   const data =
     (document.querySelector("#contents") as HTMLTextAreaElement)?.value || "";
@@ -219,6 +199,63 @@ onMounted(() => {
 
 <template>
   <div
+    v-if="showOpenDialog"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+  >
+    <div class="flex flex-col w-full max-w-md bg-white rounded-lg p-4 gap-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Open File</h3>
+      </div>
+      <div class="mt-3">
+        <p v-if="!deviceFiles.length" class="text-sm text-gray-500">
+          No saved files yet.
+        </p>
+        <div v-else class="flex flex-col gap-2">
+          <button
+            v-for="file in deviceFiles"
+            :key="file"
+            class="file-btn px-3 py-2 rounded border border-gray-300 text-left w-full"
+            @click="confirmOpenDeviceFile(file)"
+          >
+            {{ file }}
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center justify-end">
+        <button class="text-gray-500" @click="showOpenDialog = false">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    v-if="showSaveDialog"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+  >
+    <div class="flex flex-col w-full max-w-md bg-white rounded-lg p-4 gap-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Save File</h3>
+      </div>
+      <div class="mt-3 flex flex-col gap-3">
+        <input
+          v-model="saveFileName"
+          type="text"
+          placeholder="File name (e.g. notes.txt)"
+          class="border-2 border-gray-300 rounded-md p-2 w-full"
+        />
+        <button class="save-btn w-full" @click="confirmSaveDeviceFile()">
+          Save
+        </button>
+        <p v-if="fileError" class="text-sm text-red-600">{{ fileError }}</p>
+      </div>
+      <div class="flex items-center justify-end">
+        <button class="text-gray-500" @click="showSaveDialog = false">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
     class="app-shell min-h-screen w-screen flex flex-col items-start justify-start overflow-y-auto p-4 sm:p-6 gap-6"
   >
     <div class="w-full max-w-4xl mx-auto">
@@ -240,13 +277,13 @@ onMounted(() => {
           v-model="loginUsername"
           type="text"
           placeholder="Username"
-          class="border-2 border-gray-300 rounded-md p-2 w-full"
+          class="border-2 border-gray-300 rounded-md p-2 h-10"
         />
         <input
           v-model="loginPassword"
           type="password"
           placeholder="Password"
-          class="border-2 border-gray-300 rounded-md p-2 w-full"
+          class="border-2 border-gray-300 rounded-md p-2 h-10"
         />
         <button
           class="submit-btn w-full sm:w-auto"
@@ -256,46 +293,31 @@ onMounted(() => {
         </button>
       </div>
       <p v-if="error" class="my-2 text-red-600">{{ error }}</p>
-      <p class="mt-6 text-gray-600">demonstrating file dialogs</p>
-      <div class="flex flex-col lg:flex-row items-start gap-4 w-full">
-        <textarea
-          id="contents"
-          class="w-full lg:max-w-2xl h-40 border-2 border-gray-300 rounded-md p-2"
-          placeholder="File contents will appear here..."
-        ></textarea>
-        <div class="flex flex-row lg:flex-col gap-3 w-full lg:w-auto">
-          <button class="open-btn w-full lg:w-auto" @click="openFile()">
-            Open File
-          </button>
-          <button class="save-btn w-full lg:w-auto" @click="saveFile()">
-            Save File
-          </button>
-        </div>
-      </div>
       <div class="mt-6">
-        <p class="text-gray-600">
-          demonstrating file dialogs SQLite database operations.
-        </p>
-        <div class="flex flex-col md:flex-row gap-4 w-full">
+        <p class="text-gray-600">demonstrating SQLite database operations</p>
+        <div class="flex flex-row gap-4 w-full max-w-md mt-4">
           <input
             v-model="username"
             type="text"
             placeholder="Username"
-            class="border-2 border-gray-300 rounded-md p-2 w-full"
+            class="border-2 border-gray-300 rounded-md p-2 h-10"
           />
           <input
             v-model="password"
             type="password"
             placeholder="Password"
-            class="border-2 border-gray-300 rounded-md p-2 w-full"
+            class="border-2 border-gray-300 rounded-md p-2 h-10"
           />
           <button
-            class="submit-btn w-full md:w-auto"
+            class="submit-btn h-10 w-40 whitespace-nowrap"
             @click="addUser(username, password)"
           >
             Add User
           </button>
-          <button class="clear-btn w-full md:w-auto" @click="clearUsers()">
+          <button
+            class="clear-btn h-10 w-40 whitespace-nowrap"
+            @click="clearUsers()"
+          >
             Clear Users
           </button>
         </div>
@@ -327,58 +349,23 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-    <div
-      v-if="showOpenDialog"
-      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
-    >
-      <div class="w-full max-w-md bg-white rounded-lg p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Open File</h3>
-          <button class="text-gray-500" @click="showOpenDialog = false">
-            Close
-          </button>
-        </div>
-        <div class="mt-3">
-          <p v-if="!deviceFiles.length" class="text-sm text-gray-500">
-            No saved files yet.
-          </p>
-          <div v-else class="flex flex-col gap-2">
-            <button
-              v-for="file in deviceFiles"
-              :key="file"
-              class="px-3 py-2 rounded border border-gray-300 text-left"
-              @click="confirmOpenDeviceFile(file)"
-            >
-              {{ file }}
-            </button>
+        <div>
+          <p class="mt-6 text-gray-600">demonstrating file dialogs</p>
+          <div class="flex flex-col lg:flex-row items-start gap-4 w-full">
+            <textarea
+              id="contents"
+              class="w-full lg:max-w-2xl h-40 border-2 border-gray-300 rounded-md p-2"
+              placeholder="File contents will appear here..."
+            ></textarea>
+            <div class="flex flex-row lg:flex-col gap-3 w-full lg:w-auto">
+              <button class="open-btn w-full lg:w-auto" @click="openFile()">
+                Open File
+              </button>
+              <button class="save-btn w-full lg:w-auto" @click="saveFile()">
+                Save File
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-    <div
-      v-if="showSaveDialog"
-      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
-    >
-      <div class="w-full max-w-md bg-white rounded-lg p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Save File</h3>
-          <button class="text-gray-500" @click="showSaveDialog = false">
-            Close
-          </button>
-        </div>
-        <div class="mt-3 flex flex-col gap-3">
-          <input
-            v-model="saveFileName"
-            type="text"
-            placeholder="File name (e.g. notes.txt)"
-            class="border-2 border-gray-300 rounded-md p-2 w-full"
-          />
-          <button class="save-btn w-full" @click="confirmSaveDeviceFile()">
-            Save
-          </button>
-          <p v-if="fileError" class="text-sm text-red-600">{{ fileError }}</p>
         </div>
       </div>
     </div>
