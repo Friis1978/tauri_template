@@ -218,7 +218,10 @@ const confirmOpenDeviceFile = async (filename: string) => {
 
 // ── Google Drive API (system browser OAuth + deep link callback) ──
 
-const REDIRECT_URI = "http://localhost:1420/oauth-callback.html";
+// Hosted on GitHub Pages so it works on desktop, simulator, AND physical device
+// (Google OAuth rejects IP addresses as origins, so we can't use the dev server URL)
+const REDIRECT_URI =
+  "https://friis1978.github.io/tauri_template/oauth-callback.html";
 
 const connectGoogleDrive = async () => {
   driveError.value = "";
