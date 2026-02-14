@@ -943,6 +943,163 @@ onUnmounted(() => {
         </div>
       </div>
 
+      <!-- Metronome -->
+      <div>
+        <p class="mt-6 text-gray-600">Metronome</p>
+        <div
+          class="mt-4 w-full rounded-xl border-2 border-gray-300 p-4"
+          style="touch-action: manipulation"
+        >
+          <!-- BPM Display -->
+          <div class="flex flex-col items-center gap-4">
+            <div class="text-5xl font-bold tabular-nums text-gray-800">
+              {{ metronomeBpm }}
+            </div>
+            <div class="text-sm text-gray-500 -mt-2">BPM</div>
+
+            <!-- BPM Controls -->
+            <div class="flex items-center gap-3">
+              <button
+                class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 text-xl font-bold flex items-center justify-center active:bg-gray-300"
+                style="touch-action: manipulation"
+                @touchend.prevent="adjustBpm(-5)"
+                @click="adjustBpm(-5)"
+              >
+                −
+              </button>
+              <button
+                class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center active:bg-gray-200"
+                style="touch-action: manipulation"
+                @touchend.prevent="adjustBpm(-1)"
+                @click="adjustBpm(-1)"
+              >
+                −1
+              </button>
+              <input
+                v-model.number="metronomeBpm"
+                type="range"
+                min="20"
+                max="300"
+                class="w-32 accent-blue-600"
+              />
+              <button
+                class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center active:bg-gray-200"
+                style="touch-action: manipulation"
+                @touchend.prevent="adjustBpm(1)"
+                @click="adjustBpm(1)"
+              >
+                +1
+              </button>
+              <button
+                class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 text-xl font-bold flex items-center justify-center active:bg-gray-300"
+                style="touch-action: manipulation"
+                @touchend.prevent="adjustBpm(5)"
+                @click="adjustBpm(5)"
+              >
+                +
+              </button>
+            </div>
+
+            <!-- Beat indicator dots -->
+            <div class="flex items-center gap-2">
+              <div
+                v-for="beat in metronomeBeatsPerMeasure"
+                :key="beat"
+                class="w-4 h-4 rounded-full transition-all duration-75"
+                :class="[
+                  metronomeIsPlaying && metronomeCurrentBeat === beat - 1
+                    ? beat === 1
+                      ? 'bg-blue-600 scale-125'
+                      : 'bg-blue-400 scale-110'
+                    : 'bg-gray-300',
+                ]"
+              ></div>
+            </div>
+
+            <!-- Beats per measure -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <span>Beats:</span>
+              <button
+                v-for="n in [2, 3, 4, 5, 6, 7, 8]"
+                :key="n"
+                class="w-8 h-8 rounded-full text-sm font-medium flex items-center justify-center"
+                :class="[
+                  metronomeBeatsPerMeasure === n
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 active:bg-gray-200',
+                ]"
+                style="touch-action: manipulation"
+                @touchend.prevent="metronomeBeatsPerMeasure = n"
+                @click="metronomeBeatsPerMeasure = n"
+              >
+                {{ n }}
+              </button>
+            </div>
+
+            <!-- Volume slider -->
+            <div class="flex items-center gap-2 w-full max-w-xs">
+              <span class="text-sm text-gray-500">🔈</span>
+              <input
+                v-model.number="metronomeVolume"
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                class="flex-1 accent-blue-600"
+              />
+              <span class="text-sm text-gray-500">🔊</span>
+            </div>
+
+            <!-- Play / Tap buttons -->
+            <div class="flex items-center gap-3">
+              <button
+                class="px-6 py-3 rounded-full text-white font-semibold text-base"
+                :class="[
+                  metronomeIsPlaying
+                    ? 'bg-red-500 active:bg-red-600'
+                    : 'bg-blue-600 active:bg-blue-700',
+                ]"
+                style="touch-action: manipulation"
+                @touchend.prevent="toggleMetronome()"
+                @click="toggleMetronome()"
+              >
+                {{ metronomeIsPlaying ? "⏹ Stop" : "▶ Start" }}
+              </button>
+              <button
+                class="px-4 py-3 rounded-full bg-gray-200 text-gray-700 font-medium text-base active:bg-gray-300"
+                style="touch-action: manipulation"
+                @touchend.prevent="tapTempo()"
+                @click="tapTempo()"
+              >
+                Tap
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="mt-6 text-gray-600">friismusic.com</p>
+        <div
+          class="mt-4 w-full rounded-xl overflow-hidden border-2 border-gray-300"
+          style="
+            height: 600px;
+            position: relative;
+            z-index: 0;
+            isolation: isolate;
+          "
+        >
+          <iframe
+            src="https://friismusic.com"
+            class="w-full h-full"
+            style="pointer-events: auto"
+            frameborder="0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+
       <p class="mt-6 text-gray-600">demonstrating tauri functions</p>
       <div class="mt-2">
         <p v-if="loggedInUser" class="text-green-600">
@@ -1049,161 +1206,6 @@ onUnmounted(() => {
                 Save File
               </button>
             </div>
-          </div>
-        </div>
-        <!-- Metronome -->
-        <div>
-          <p class="mt-6 text-gray-600">Metronome</p>
-          <div
-            class="mt-4 w-full rounded-xl border-2 border-gray-300 p-4"
-            style="touch-action: manipulation"
-          >
-            <!-- BPM Display -->
-            <div class="flex flex-col items-center gap-4">
-              <div class="text-5xl font-bold tabular-nums text-gray-800">
-                {{ metronomeBpm }}
-              </div>
-              <div class="text-sm text-gray-500 -mt-2">BPM</div>
-
-              <!-- BPM Controls -->
-              <div class="flex items-center gap-3">
-                <button
-                  class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 text-xl font-bold flex items-center justify-center active:bg-gray-300"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="adjustBpm(-5)"
-                  @click="adjustBpm(-5)"
-                >
-                  −
-                </button>
-                <button
-                  class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center active:bg-gray-200"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="adjustBpm(-1)"
-                  @click="adjustBpm(-1)"
-                >
-                  −1
-                </button>
-                <input
-                  v-model.number="metronomeBpm"
-                  type="range"
-                  min="20"
-                  max="300"
-                  class="w-32 accent-blue-600"
-                />
-                <button
-                  class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center active:bg-gray-200"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="adjustBpm(1)"
-                  @click="adjustBpm(1)"
-                >
-                  +1
-                </button>
-                <button
-                  class="w-10 h-10 rounded-full bg-gray-200 text-gray-700 text-xl font-bold flex items-center justify-center active:bg-gray-300"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="adjustBpm(5)"
-                  @click="adjustBpm(5)"
-                >
-                  +
-                </button>
-              </div>
-
-              <!-- Beat indicator dots -->
-              <div class="flex items-center gap-2">
-                <div
-                  v-for="beat in metronomeBeatsPerMeasure"
-                  :key="beat"
-                  class="w-4 h-4 rounded-full transition-all duration-75"
-                  :class="[
-                    metronomeIsPlaying && metronomeCurrentBeat === beat - 1
-                      ? beat === 1
-                        ? 'bg-blue-600 scale-125'
-                        : 'bg-blue-400 scale-110'
-                      : 'bg-gray-300',
-                  ]"
-                ></div>
-              </div>
-
-              <!-- Beats per measure -->
-              <div class="flex items-center gap-2 text-sm text-gray-600">
-                <span>Beats:</span>
-                <button
-                  v-for="n in [2, 3, 4, 5, 6, 7, 8]"
-                  :key="n"
-                  class="w-8 h-8 rounded-full text-sm font-medium flex items-center justify-center"
-                  :class="[
-                    metronomeBeatsPerMeasure === n
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 active:bg-gray-200',
-                  ]"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="metronomeBeatsPerMeasure = n"
-                  @click="metronomeBeatsPerMeasure = n"
-                >
-                  {{ n }}
-                </button>
-              </div>
-
-              <!-- Volume slider -->
-              <div class="flex items-center gap-2 w-full max-w-xs">
-                <span class="text-sm text-gray-500">🔈</span>
-                <input
-                  v-model.number="metronomeVolume"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  class="flex-1 accent-blue-600"
-                />
-                <span class="text-sm text-gray-500">🔊</span>
-              </div>
-
-              <!-- Play / Tap buttons -->
-              <div class="flex items-center gap-3">
-                <button
-                  class="px-6 py-3 rounded-full text-white font-semibold text-base"
-                  :class="[
-                    metronomeIsPlaying
-                      ? 'bg-red-500 active:bg-red-600'
-                      : 'bg-blue-600 active:bg-blue-700',
-                  ]"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="toggleMetronome()"
-                  @click="toggleMetronome()"
-                >
-                  {{ metronomeIsPlaying ? "⏹ Stop" : "▶ Start" }}
-                </button>
-                <button
-                  class="px-4 py-3 rounded-full bg-gray-200 text-gray-700 font-medium text-base active:bg-gray-300"
-                  style="touch-action: manipulation"
-                  @touchend.prevent="tapTempo()"
-                  @click="tapTempo()"
-                >
-                  Tap
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <p class="mt-6 text-gray-600">friismusic.com</p>
-          <div
-            class="mt-4 w-full rounded-xl overflow-hidden border-2 border-gray-300"
-            style="
-              height: 600px;
-              position: relative;
-              z-index: 0;
-              isolation: isolate;
-            "
-          >
-            <iframe
-              src="https://friismusic.com"
-              class="w-full h-full"
-              style="pointer-events: auto"
-              frameborder="0"
-              allow="autoplay; encrypted-media"
-              allowfullscreen
-            ></iframe>
           </div>
         </div>
       </div>
