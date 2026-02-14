@@ -144,108 +144,124 @@ onMounted(() => {
 
 <template>
   <div
-    class="h-screen w-screen flex flex-col items-start justify-start overflow-y-auto p-5"
+    class="app-shell min-h-screen w-screen flex flex-col items-start justify-start overflow-y-auto p-4 sm:p-6 gap-6"
   >
-    <p class="mt-4 text-gray-600">demonstrating tauri functions</p>
-    <div>
-      <p v-if="loggedInUser" class="text-green-600">
-        Logged in as: {{ loggedInUser.username }}
-        <button
-          @click="logout()"
-          class="ml-4 px-2 py-1 bg-red-500 text-white rounded text-sm"
-        >
-          Logout
-        </button>
-      </p>
-      <p v-else class="text-red-600">Not logged in</p>
-    </div>
-    <div class="flex gap-4">
-      <input
-        v-model="loginUsername"
-        type="text"
-        placeholder="Username"
-        class="border-2 border-gray-300 rounded-md p-2 mt-4"
-      />
-      <input
-        v-model="loginPassword"
-        type="password"
-        placeholder="Password"
-        class="border-2 border-gray-300 rounded-md p-2 mt-4"
-      />
-      <button
-        class="mt-4 submit-btn"
-        @click="login(loginUsername, loginPassword)"
-      >
-        Login
-      </button>
-    </div>
-    <p v-if="error" class="my-2 text-red-600">{{ error }}</p>
-    <p class="mt-4 text-gray-600">demonstrating file dialogs</p>
-    <div class="flex flex-row items-start gap-5">
-      <textarea
-        id="contents"
-        class="w-full max-w-md h-32 border-2 border-gray-300 rounded-md p-2 mt-4"
-        placeholder="File contents will appear here..."
-      ></textarea>
-      <div>
-        <button class="mt-4 open-btn" @click="openFile()">Open File</button>
-        <button class="mt-4 save-btn" @click="saveFile()">Save File</button>
+    <div class="w-full max-w-4xl mx-auto">
+      <p class="text-gray-600">demonstrating tauri functions</p>
+      <div class="mt-2">
+        <p v-if="loggedInUser" class="text-green-600">
+          Logged in as: {{ loggedInUser.username }}
+          <button
+            @click="logout()"
+            class="ml-4 px-2 py-1 bg-red-500 text-white rounded text-sm"
+          >
+            Logout
+          </button>
+        </p>
+        <p v-else class="text-red-600">Not logged in</p>
       </div>
-    </div>
-    <div>
-      <p class="mt-4 text-gray-600">
-        demonstrating file dialogs SQLite database operations.
-      </p>
-      <div class="flex gap-4">
+      <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md mt-4">
         <input
-          v-model="username"
+          v-model="loginUsername"
           type="text"
           placeholder="Username"
-          class="border-2 border-gray-300 rounded-md p-2 mt-4"
+          class="border-2 border-gray-300 rounded-md p-2 w-full"
         />
         <input
-          v-model="password"
+          v-model="loginPassword"
           type="password"
           placeholder="Password"
-          class="border-2 border-gray-300 rounded-md p-2 mt-4"
+          class="border-2 border-gray-300 rounded-md p-2 w-full"
         />
-        <button class="mt-4 submit-btn" @click="addUser(username, password)">
-          Add User
-        </button>
-        <button class="mt-4 clear-btn" @click="clearUsers()">
-          Clear Users
+        <button
+          class="submit-btn w-full sm:w-auto"
+          @click="login(loginUsername, loginPassword)"
+        >
+          Login
         </button>
       </div>
-      <div
-        v-if="allUsers.length"
-        class="flex flex-col mt-6 w-full max-w-md border-2 border-gray-300 rounded-md p-4 overflow-x-auto"
-      >
-        <h2 class="text-lg font-semibold mb-4">All Users</h2>
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="border-b-2">
-              <th class="text-left py-2">ID</th>
-              <th class="text-left py-2">Username</th>
-              <th class="text-left py-2">Password</th>
-              <th class="text-left py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in allUsers" :key="user.id" class="border-b">
-              <td class="py-2">{{ user.id }}</td>
-              <td class="py-2">{{ user.username }}</td>
-              <td class="py-2">{{ user.password }}</td>
-              <td class="py-2">
-                <button class="delete-btn" @click="deleteUser(user.id)">
-                  Delete
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <p v-if="error" class="my-2 text-red-600">{{ error }}</p>
+      <p class="mt-6 text-gray-600">demonstrating file dialogs</p>
+      <div class="flex flex-col lg:flex-row items-start gap-4 w-full">
+        <textarea
+          id="contents"
+          class="w-full lg:max-w-2xl h-40 border-2 border-gray-300 rounded-md p-2"
+          placeholder="File contents will appear here..."
+        ></textarea>
+        <div class="flex flex-row lg:flex-col gap-3 w-full lg:w-auto">
+          <button class="open-btn w-full lg:w-auto" @click="openFile()">
+            Open File
+          </button>
+          <button class="save-btn w-full lg:w-auto" @click="saveFile()">
+            Save File
+          </button>
+        </div>
+      </div>
+      <div class="mt-6">
+        <p class="text-gray-600">
+          demonstrating file dialogs SQLite database operations.
+        </p>
+        <div class="flex flex-col md:flex-row gap-4 w-full">
+          <input
+            v-model="username"
+            type="text"
+            placeholder="Username"
+            class="border-2 border-gray-300 rounded-md p-2 w-full"
+          />
+          <input
+            v-model="password"
+            type="password"
+            placeholder="Password"
+            class="border-2 border-gray-300 rounded-md p-2 w-full"
+          />
+          <button
+            class="submit-btn w-full md:w-auto"
+            @click="addUser(username, password)"
+          >
+            Add User
+          </button>
+          <button class="clear-btn w-full md:w-auto" @click="clearUsers()">
+            Clear Users
+          </button>
+        </div>
+        <div
+          v-if="allUsers.length"
+          class="flex flex-col mt-6 w-full max-w-2xl border-2 border-gray-300 rounded-md p-4 overflow-x-auto"
+        >
+          <h2 class="text-lg font-semibold mb-4">All Users</h2>
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="border-b-2">
+                <th class="text-left py-2">ID</th>
+                <th class="text-left py-2">Username</th>
+                <th class="text-left py-2">Password</th>
+                <th class="text-left py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in allUsers" :key="user.id" class="border-b">
+                <td class="py-2">{{ user.id }}</td>
+                <td class="py-2">{{ user.username }}</td>
+                <td class="py-2">{{ user.password }}</td>
+                <td class="py-2">
+                  <button class="delete-btn" @click="deleteUser(user.id)">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-shell {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  padding-left: calc(env(safe-area-inset-left, 0px) + 1rem);
+  padding-right: calc(env(safe-area-inset-right, 0px) + 1rem);
+}
+</style>
