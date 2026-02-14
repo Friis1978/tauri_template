@@ -37,28 +37,67 @@
           transform: rotate(360deg);
         }
       }
+      .open-btn {
+        display: inline-block;
+        margin-top: 1rem;
+        padding: 0.85rem 2rem;
+        background: #3b82f6;
+        color: #fff;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+      }
+      .open-btn:active {
+        background: #2563eb;
+      }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <div class="card">
-      <div class="spinner"></div>
-      <p id="status">Returning to app…</p>
+      <div class="spinner" id="spinner"></div>
+      <p id="status">Signing in…</p>
+      <a id="open-btn" class="open-btn hidden" href="#">Open App</a>
     </div>
     <script>
       // Google OAuth implicit flow puts the token in the URL fragment (#)
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const token = params.get("access_token");
-      const error = params.get("error");
+      var hash = window.location.hash.substring(1);
+      var params = new URLSearchParams(hash);
+      var token = params.get("access_token");
+      var error = params.get("error");
+      var deepLink = "";
 
       if (token) {
-        // Redirect to the custom URL scheme so the Tauri app catches the deep link
-        window.location.href =
+        deepLink =
           "rasmustauriapp://oauth?access_token=" + encodeURIComponent(token);
       } else if (error) {
-        window.location.href =
+        deepLink =
           "rasmustauriapp://oauth?error=" + encodeURIComponent(error);
+      }
+
+      if (deepLink) {
+        // Set the link href so tapping the button works
+        var btn = document.getElementById("open-btn");
+        btn.href = deepLink;
+
+        // Try automatic redirect first
+        window.location.href = deepLink;
+
+        // If still here after 1.5s, Safari blocked the auto-redirect — show button
+        setTimeout(function () {
+          document.getElementById("spinner").classList.add("hidden");
+          document.getElementById("status").textContent =
+            "Tap the button to return to the app";
+          btn.classList.remove("hidden");
+        }, 1500);
       } else {
+        document.getElementById("spinner").classList.add("hidden");
         document.getElementById("status").textContent =
           "Authentication failed. Please close this tab and try again.";
       }
