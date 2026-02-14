@@ -1,5 +1,7 @@
 use std::sync::Mutex;
 
+use std::path::PathBuf;
+
 use tauri::{Emitter, Manager, AppHandle};
 use tauri_plugin_dialog::DialogExt;
 
@@ -36,7 +38,15 @@ pub fn run() {
             username: "".to_string(),
             password: "".to_string(),
         }))
-        .invoke_handler(tauri::generate_handler![login, create_user, open_file, save_file])
+        .invoke_handler(tauri::generate_handler![
+            login,
+            create_user,
+            open_file,
+            save_file,
+            save_device_file,
+            read_device_file,
+            list_device_files
+        ])
         .setup(|_app| {
             #[cfg(debug_assertions)] // only include this code on debug builds
             {
@@ -112,6 +122,70 @@ fn open_file(app: AppHandle){
 
         app.emit("content", content).unwrap();
     });
+}
+
+fn sanitize_filename(filename: &str) -> Result<String, String> {
+    let trimmed = filename.trim();
+    if trimmed.is_empty() {
+        return Err("Filename cannot be empty".to_string());
+    }
+    if trimmed.contains('/') || trimmed.contains('\\') {
+        return Err("Filename cannot include path separators".to_string());
+    }
+    let mut name = trimmed.to_string();
+    if !name.to_lowercase().ends_with(".txt") {
+        name.push_str(".txt");
+    }
+    Ok(name)
+}
+
+fn app_data_txt_path(app: &AppHandle, filename: &str) -> Result<PathBuf, String> {
+    let name = sanitize_filename(filename)?;
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve app data dir: {e}"))?;
+    std::fs::create_dir_all(&dir)
+        .map_err(|e| format!("Failed to create app data dir: {e}"))?;
+    Ok(dir.join(name))
+}
+
+#[tauri::command]
+fn save_device_file(app: AppHandle, filename: String, content: String) -> Result<String, String> {
+    let path = app_data_txt_path(&app, &filename)?;
+    std::fs::write(&path, content).map_err(|e| format!("Failed to write file: {e}"))?;
+    Ok(path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn read_device_file(app: AppHandle, filename: String) -> Result<String, String> {
+    let path = app_data_txt_path(&app, &filename)?;
+    std::fs::read_to_string(&path).map_err(|e| format!("Failed to read file: {e}"))
+}
+
+#[tauri::command]
+fn list_device_files(app: AppHandle) -> Result<Vec<String>, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve app data dir: {e}"))?;
+    if !dir.exists() {
+        return Ok(vec![]);
+    }
+    let mut files = Vec::new();
+    for entry in std::fs::read_dir(dir).map_err(|e| format!("Failed to read app data dir: {e}"))? {
+        let entry = entry.map_err(|e| format!("Failed to read entry: {e}"))?;
+        let path = entry.path();
+        if path.is_file() {
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                if name.to_lowercase().ends_with(".txt") {
+                    files.push(name.to_string());
+                }
+            }
+        }
+    }
+    files.sort();
+    Ok(files)
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]

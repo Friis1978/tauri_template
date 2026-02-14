@@ -18,6 +18,12 @@ const loginPassword = ref("");
 const username = ref("");
 const password = ref("");
 const error = ref("");
+const fileError = ref("");
+const deviceFileName = ref("");
+const deviceFiles = ref<string[]>([]);
+const showOpenDialog = ref(false);
+const showSaveDialog = ref(false);
+const saveFileName = ref("");
 
 const DATABASE_PATH = "sqlite:mydatabase.db";
 
@@ -100,16 +106,83 @@ const logout = () => {
 };
 
 const openFile = async () => {
-  await invoke("open_file");
+  await refreshDeviceFiles();
+  showOpenDialog.value = true;
 };
 
 const saveFile = async () => {
+  saveFileName.value = deviceFileName.value || "";
+  showSaveDialog.value = true;
+};
+
+const refreshDeviceFiles = async () => {
+  try {
+    deviceFiles.value = (await invoke("list_device_files")) as string[];
+  } catch (err) {
+    console.error("Failed to list device files:", err);
+  }
+};
+
+const saveDeviceFile = async () => {
   const data =
     (document.querySelector("#contents") as HTMLTextAreaElement)?.value || "";
-  await invoke("save_file", { content: data });
+  if (!deviceFileName.value.trim()) {
+    fileError.value = "Please enter a file name";
+    return;
+  }
+  try {
+    fileError.value = "";
+    await invoke("save_device_file", {
+      filename: deviceFileName.value,
+      content: data,
+    });
+    await refreshDeviceFiles();
+  } catch (err) {
+    console.error("Failed to save device file:", err);
+    fileError.value = "Failed to save file";
+  }
+};
 
-  // clear the textarea after saving
-  (document.querySelector("#contents") as HTMLTextAreaElement).value = "";
+const confirmSaveDeviceFile = async () => {
+  const data =
+    (document.querySelector("#contents") as HTMLTextAreaElement)?.value || "";
+  if (!saveFileName.value.trim()) {
+    fileError.value = "Please enter a file name";
+    return;
+  }
+  try {
+    fileError.value = "";
+    await invoke("save_device_file", {
+      filename: saveFileName.value,
+      content: data,
+    });
+    deviceFileName.value = saveFileName.value;
+    showSaveDialog.value = false;
+    await refreshDeviceFiles();
+  } catch (err) {
+    console.error("Failed to save device file:", err);
+    fileError.value = "Failed to save file";
+  }
+};
+
+const openDeviceFile = async (filename: string) => {
+  try {
+    fileError.value = "";
+    const content = (await invoke("read_device_file", {
+      filename,
+    })) as string;
+    const textarea = document.querySelector("#contents") as HTMLTextAreaElement;
+    textarea.value = content;
+    deviceFileName.value = filename;
+  } catch (err) {
+    console.error("Failed to open device file:", err);
+    fileError.value = "Failed to open file";
+  }
+};
+
+const confirmOpenDeviceFile = async (filename: string) => {
+  await openDeviceFile(filename);
+  showOpenDialog.value = false;
 };
 
 onMounted(() => {
@@ -139,6 +212,8 @@ onMounted(() => {
     console.log("Database loaded:", user_db.value);
     queryAllUsers();
   });
+
+  refreshDeviceFiles();
 });
 </script>
 
@@ -251,6 +326,59 @@ onMounted(() => {
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="showOpenDialog"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+    >
+      <div class="w-full max-w-md bg-white rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Open File</h3>
+          <button class="text-gray-500" @click="showOpenDialog = false">
+            Close
+          </button>
+        </div>
+        <div class="mt-3">
+          <p v-if="!deviceFiles.length" class="text-sm text-gray-500">
+            No saved files yet.
+          </p>
+          <div v-else class="flex flex-col gap-2">
+            <button
+              v-for="file in deviceFiles"
+              :key="file"
+              class="px-3 py-2 rounded border border-gray-300 text-left"
+              @click="confirmOpenDeviceFile(file)"
+            >
+              {{ file }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="showSaveDialog"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+    >
+      <div class="w-full max-w-md bg-white rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Save File</h3>
+          <button class="text-gray-500" @click="showSaveDialog = false">
+            Close
+          </button>
+        </div>
+        <div class="mt-3 flex flex-col gap-3">
+          <input
+            v-model="saveFileName"
+            type="text"
+            placeholder="File name (e.g. notes.txt)"
+            class="border-2 border-gray-300 rounded-md p-2 w-full"
+          />
+          <button class="save-btn w-full" @click="confirmSaveDeviceFile()">
+            Save
+          </button>
+          <p v-if="fileError" class="text-sm text-red-600">{{ fileError }}</p>
         </div>
       </div>
     </div>
