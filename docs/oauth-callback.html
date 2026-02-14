@@ -77,8 +77,7 @@
         deepLink =
           "rasmustauriapp://oauth?access_token=" + encodeURIComponent(token);
       } else if (error) {
-        deepLink =
-          "rasmustauriapp://oauth?error=" + encodeURIComponent(error);
+        deepLink = "rasmustauriapp://oauth?error=" + encodeURIComponent(error);
       }
 
       if (deepLink) {
