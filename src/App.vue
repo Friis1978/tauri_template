@@ -256,9 +256,9 @@ onMounted(() => {
     </div>
   </div>
   <div
-    class="app-shell min-h-screen w-screen flex flex-col items-start justify-start overflow-y-auto p-4 sm:p-6 gap-6"
+    class="app-shell w-full flex flex-col items-start justify-start p-4 sm:p-6 gap-6"
   >
-    <div class="w-full max-w-4xl mx-auto">
+    <div class="w-full">
       <p class="text-gray-600">demonstrating tauri functions</p>
       <div class="mt-2">
         <p v-if="loggedInUser" class="text-green-600">
@@ -365,6 +365,21 @@ onMounted(() => {
                 Save File
               </button>
             </div>
+          </div>
+        </div>
+        <div>
+          <p class="mt-6 text-gray-600">friismusic.com</p>
+          <div
+            class="mt-4 w-full rounded-xl overflow-hidden border-2 border-gray-300"
+            style="height: 600px"
+          >
+            <iframe
+              src="https://friismusic.com"
+              class="w-full h-full"
+              frameborder="0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+            ></iframe>
           </div>
         </div>
       </div>
