@@ -1,6 +1,6 @@
 name: test_app
 options:
-  bundleIdPrefix: com.rfh.rasmus-tauri-app
+  bundleIdPrefix: com.rfh.rasmustauriapp
   deploymentTarget:
     iOS: 14.0
 fileGroups: [../../src]
@@ -10,8 +10,8 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: Rasmus' Tauri App
-      PRODUCT_BUNDLE_IDENTIFIER: com.rfh.rasmus-tauri-app
+      PRODUCT_NAME: Rasmus Tauri App
+      PRODUCT_BUNDLE_IDENTIFIER: com.rfh.rasmustauriapp
 targetTemplates:
   app:
     type: application
@@ -68,7 +68,6 @@ targets:
         LIBRARY_SEARCH_PATHS[arch=x86_64]: $(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         LIBRARY_SEARCH_PATHS[arch=arm64]: $(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: true
-        EXCLUDED_ARCHS[sdk=iphoneos*]: x86_64
       groups: [app]
     dependencies:
       - framework: libapp.a
@@ -81,7 +80,12 @@ targets:
       - sdk: UIKit.framework
       - sdk: WebKit.framework
     preBuildScripts:
-      - script: pnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:-${ARCHS_STANDARD:-arm64}}
+      - script: |
+          EFFECTIVE_SDKROOT="${SDKROOT:?}"
+          if echo "${ARCHS:-}" | grep -q "x86_64" && echo "$SDKROOT" | grep -q "iPhoneOS"; then
+            EFFECTIVE_SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          fi
+          pnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${EFFECTIVE_SDKROOT} --framework-search-paths "${FRAMEWORK_SEARCH_PATHS:?}" --header-search-paths "${HEADER_SEARCH_PATHS:?}" --gcc-preprocessor-definitions "${GCC_PREPROCESSOR_DEFINITIONS:-}" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:-${ARCHS_STANDARD:-arm64}}
         name: Build Rust Code
         basedOnDependencyAnalysis: false
         outputFiles:

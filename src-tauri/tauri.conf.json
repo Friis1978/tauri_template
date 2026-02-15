@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Rasmus' Tauri App",
+  "productName": "Rasmus Tauri App",
   "version": "0.1.0",
   "identifier": "com.rfh.rasmustauriapp",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Rasmus' Tauri App",
+        "title": "Rasmus Tauri App",
         "width": 800,
         "height": 600,
         "minWidth": 800,

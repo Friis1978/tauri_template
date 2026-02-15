@@ -25,7 +25,7 @@
 		0B244879356EC57FFB5FE33A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		157C856BC748479DE86B8F6F /* test_app_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = test_app_iOS.entitlements; sourceTree = "<group>"; };
 		1CE9B05998E31F47C2C7EB9D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		28C3003ABA9DA04231F2FCB1 /* Rasmus' Tauri App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Rasmus' Tauri App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		28C3003ABA9DA04231F2FCB1 /* Rasmus Tauri App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Rasmus Tauri App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F27E91D9DE18704DFA5905A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A2500400315B4BE54D6157C /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		9BD81AC0F6F992B8DE6FE977 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -114,7 +114,7 @@
 		9DB13488E14EB26B79E1A147 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				28C3003ABA9DA04231F2FCB1 /* Rasmus' Tauri App.app */,
+				28C3003ABA9DA04231F2FCB1 /* Rasmus Tauri App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -170,7 +170,7 @@
 			packageProductDependencies = (
 			);
 			productName = test_app_iOS;
-			productReference = 28C3003ABA9DA04231F2FCB1 /* Rasmus' Tauri App.app */;
+			productReference = 28C3003ABA9DA04231F2FCB1 /* Rasmus Tauri App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -233,7 +233,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"/Users/rfh/Library/pnpm:/Users/rfh/.cargo/bin:/usr/local/bin:$PATH\"\npnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:-${ARCHS_STANDARD:-arm64}}";
+			shellScript = "export PATH=\"/Users/rfh/Library/pnpm:/Users/rfh/.cargo/bin:/usr/local/bin:$PATH\"\nEFFECTIVE_SDKROOT=\"${SDKROOT:?}\"\nif echo \"${ARCHS:-}\" | grep -q \"x86_64\" && echo \"$SDKROOT\" | grep -q \"iPhoneOS\"; then\n  EFFECTIVE_SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path)\nfi\npnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${EFFECTIVE_SDKROOT} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:-${ARCHS_STANDARD:-arm64}}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -257,7 +257,6 @@
 				CODE_SIGN_ENTITLEMENTS = test_app_iOS/test_app_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
-				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\".\"",
@@ -282,7 +281,7 @@
 					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.rfh.rasmustauriapp;
-				PRODUCT_NAME = "Rasmus' Tauri App";
+				PRODUCT_NAME = "Rasmus Tauri App";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -300,7 +299,6 @@
 				CODE_SIGN_ENTITLEMENTS = test_app_iOS/test_app_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
-				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\".\"",
@@ -325,8 +323,9 @@
 					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.rfh.rasmustauriapp;
-				PRODUCT_NAME = "Rasmus' Tauri App";
+				PRODUCT_NAME = "Rasmus Tauri App";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64  x86_64";
 				DEVELOPMENT_TEAM = "3QXM8P7QY6";
